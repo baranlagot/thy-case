@@ -2,7 +2,14 @@
 
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
-import Tesseract from "tesseract.js";
+import Tesseract from 'tesseract.js';
+import OpenAI from 'openai';
+
+// Initialize OpenAI API
+const openai = new OpenAI({
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    dangerouslyAllowBrowser: true  // Make sure to set your OpenAI API key in your environment variables
+});
 
 const DropzonePage: React.FC = () => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -52,10 +59,25 @@ const DropzonePage: React.FC = () => {
         }
 
         try {
-            const result = await Tesseract.recognize(selectedImage, "eng", {
-                logger: (info) => console.log(info), // Progress logs
+            // Use Tesseract.js to extract text from the image
+            const { data: { text } } = await Tesseract.recognize(selectedImage, 'eng');
+
+            // Use OpenAI to process the extracted text
+            const result = await openai.chat.completions.create({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    { role: "system", content: "You are a helpful assistant." },
+                    { role: "user", content: `Extract the list of food items from the following text:\n\n${text}` }
+                ],
+                max_tokens: 100,
             });
-            setMenuText(result.data.text);
+
+            const messageContent = result.choices[0]?.message?.content?.trim();
+            if (messageContent) {
+                setMenuText(messageContent);
+            } else {
+                setError("Failed to extract text from the image.");
+            }
             setError(null); // Clear any errors
         } catch (err) {
             console.error("OCR Error:", err);
