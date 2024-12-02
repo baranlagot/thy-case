@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Tesseract from 'tesseract.js';
 import OpenAI from 'openai';
+import { log } from "console";
 
 // Initialize OpenAI API
 const openai = new OpenAI({
@@ -15,6 +16,8 @@ const DropzonePage: React.FC = () => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [menuText, setMenuText] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [messages, setMessages] = useState<{ role: string, content: string }[]>([]);
+    const [userInput, setUserInput] = useState<string>('');
 
     const onDrop = (acceptedFiles: File[]) => {
         if (acceptedFiles.length === 0) {
@@ -68,8 +71,8 @@ const DropzonePage: React.FC = () => {
             const result = await openai.chat.completions.create({
                 model: "gpt-4o",
                 messages: [
-                    { role: "system", content: "You are a helpful assistant." },
-                    { role: "user", content: `Extract the list of food items in english from the following text, then write these down seperating each indiviudal food item with an underscore. Don't add extra wording other than the answer:\n\n${capitalWords}` }
+                    { role: "system" as const, content: "You are a helpful assistant." },
+                    { role: "user" as const, content: `Extract the list of food items in english from the following text, then write these down seperating each indiviudal food item with an underscore. Don't add extra wording other than the answer:\n\n${capitalWords}` }
                 ],
                 max_tokens: 100,
             });
@@ -89,54 +92,40 @@ const DropzonePage: React.FC = () => {
         }
     };
 
+    const handleSendMessage = async () => {
+        if (!userInput.trim()) return;
+
+        const newMessages = [...messages, { role: 'user', content: userInput }];
+        setMessages(newMessages);
+        setUserInput('');
+        console.log(messages.map(msg => msg.content).join('\n'));
+        try {
+            const result = await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [
+                    { role: "user" as const, content: messages.map(msg => msg.content).join('\n') },
+                    { role: "system" as const, content: `You are a helpful bot, helping with information about this food items on the menu: ${menuText.join(', ')}` }
+                ],
+                max_tokens: 150,
+            });
+
+            const messageContent = result.choices[0]?.message?.content?.trim();
+            if (messageContent) {
+                setMessages([...newMessages, { role: 'assistant', content: messageContent }]);
+            }
+        } catch (err) {
+            console.error("ChatGPT Error:", err);
+        }
+    };
+
     return (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-            <h1>Upload Menu Image</h1>
-
-            {/* Dropzone Container */}
-            <div
-                {...getRootProps()}
-                style={{
-                    border: "2px dashed #ccc",
-                    padding: "20px",
-                    cursor: "pointer",
-                    marginBottom: "20px",
-                    backgroundColor: isDragActive ? "#f0f8ff" : "transparent",
-                }}
-            >
-                {/* Fix: Spread getInputProps properly */}
+        <div style={{ padding: '20px' }}>
+            <div {...getRootProps()} style={{ border: '2px dashed #cccccc', padding: '20px', textAlign: 'center' }}>
                 <input {...getInputProps()} type="file" />
-                {isDragActive ? (
-                    <p>Drop the image here...</p>
-                ) : selectedImage ? (
-                    <img
-                        src={selectedImage}
-                        alt="Uploaded preview"
-                        style={{ maxWidth: "100%", height: "auto" }}
-                    />
-                ) : (
-                    <p>Drag & drop an image here, or click to select one.</p>
-                )}
+                {isDragActive ? <p>Drop the files here ...</p> : <p>Drag 'n' drop some files here, or click to select files</p>}
             </div>
-
-            {/* Extract Text Button */}
-            {selectedImage && (
-                <button
-                    onClick={handleExtractText}
-                    style={{
-                        backgroundColor: "#0070f3",
-                        color: "#fff",
-                        padding: "10px 20px",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                    }}
-                >
-                    Extract Text from Image
-                </button>
-            )}
-
-            {/* Display Extracted Text */}
+            <button onClick={handleExtractText} style={{ marginTop: '20px' }}>Extract Text</button>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             {menuText.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: '20px' }}>
                     {menuText.map((item, index) => (
@@ -146,8 +135,23 @@ const DropzonePage: React.FC = () => {
                     ))}
                 </div>
             )}
-
-            {/* Error Handling */}
+            <div style={{ marginTop: '20px' }}>
+                <h2>Chatbot</h2>
+                <div style={{ border: '1px solid #cccccc', borderRadius: '8px', padding: '10px', height: '300px', overflowY: 'scroll' }}>
+                    {messages.map((message, index) => (
+                        <div key={index} style={{ marginBottom: '10px' }}>
+                            <strong>{message.role === 'user' ? 'You' : 'Assistant'}:</strong> {message.content}
+                        </div>
+                    ))}
+                </div>
+                <input
+                    type="text"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    style={{ width: 'calc(100% - 22px)', padding: '10px', marginTop: '10px' }}
+                />
+                <button onClick={handleSendMessage} style={{ marginTop: '10px' }}>Send</button>
+            </div>
             {error && (
                 <div style={{ color: "red", marginTop: "20px" }}>
                     <strong>Error:</strong> {error}
