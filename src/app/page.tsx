@@ -13,7 +13,7 @@ const openai = new OpenAI({
 
 const DropzonePage: React.FC = () => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [menuText, setMenuText] = useState<string>("");
+    const [menuText, setMenuText] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     const onDrop = (acceptedFiles: File[]) => {
@@ -61,20 +61,24 @@ const DropzonePage: React.FC = () => {
         try {
             // Use Tesseract.js to extract text from the image
             const { data: { text } } = await Tesseract.recognize(selectedImage, 'eng');
+            const capitalWords = text.split(/\s+/).filter(word => word === word.toUpperCase()).join(' ');
+            console.log(capitalWords);
 
             // Use OpenAI to process the extracted text
             const result = await openai.chat.completions.create({
-                model: "gpt-3.5-turbo",
+                model: "gpt-4o",
                 messages: [
                     { role: "system", content: "You are a helpful assistant." },
-                    { role: "user", content: `Extract the list of food items from the following text:\n\n${text}` }
+                    { role: "user", content: `Extract the list of food items in english from the following text, then write these down seperating each indiviudal food item with an underscore. Don't add extra wording other than the answer:\n\n${capitalWords}` }
                 ],
                 max_tokens: 100,
             });
-
+            console.log(result);
             const messageContent = result.choices[0]?.message?.content?.trim();
+
             if (messageContent) {
-                setMenuText(messageContent);
+                const foodItems = messageContent.split('_');
+                setMenuText(foodItems);
             } else {
                 setError("Failed to extract text from the image.");
             }
@@ -133,10 +137,13 @@ const DropzonePage: React.FC = () => {
             )}
 
             {/* Display Extracted Text */}
-            {menuText && (
-                <div style={{ marginTop: "20px", textAlign: "left" }}>
-                    <h2>Extracted Menu Text:</h2>
-                    <pre>{menuText}</pre>
+            {menuText.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: '20px' }}>
+                    {menuText.map((item, index) => (
+                        <div key={index} style={{ border: '1px solid #cccccc', borderRadius: '8px', padding: '10px', margin: '10px', width: '200px' }}>
+                            <p>{item}</p>
+                        </div>
+                    ))}
                 </div>
             )}
 
