@@ -161,7 +161,7 @@ const DropzonePage: React.FC = () => {
                         <h2 className="text-xl font-bold mb-3">Chatbot</h2>
                         <div className="border border-gray-300 rounded-lg p-2 h-72 overflow-y-scroll bg-gray-50">
                             {messages.map((message, index) => (
-                                <div key={index} className="mb-2">
+                                <div key={index} className={`mb-2 p-2 rounded-lg ${message.role === 'user' ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left'}`}>
                                     <strong>{message.role === 'user' ? 'You' : 'Assistant'}:</strong> {message.content}
                                 </div>
                             ))}
