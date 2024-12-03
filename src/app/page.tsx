@@ -3,21 +3,13 @@
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Tesseract from 'tesseract.js';
-import OpenAI from 'openai';
-import { log } from "console";
-
-// Initialize OpenAI API
-const openai = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true  // Make sure to set your OpenAI API key in your environment variables
-});
 
 const DropzonePage: React.FC = () => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [menuText, setMenuText] = useState<any[]>([]);
-    const [error, setError] = useState<string | null>(null);
+    const [menuText, setMenuText] = useState<string[]>([]);
     const [messages, setMessages] = useState<{ role: string, content: string }[]>([]);
     const [userInput, setUserInput] = useState<string>('');
+    const [error, setError] = useState<string | null>(null);
 
     const onDrop = (acceptedFiles: File[]) => {
         if (acceptedFiles.length === 0) {
@@ -68,16 +60,16 @@ const DropzonePage: React.FC = () => {
             console.log(capitalWords);
 
             // Use OpenAI to process the extracted text
-            const result = await openai.chat.completions.create({
-                model: "gpt-4o",
-                messages: [
-                    { role: "system" as const, content: "You are a helpful assistant." },
-                    { role: "user" as const, content: `Extract the list of food items in english from the following text, then write these down seperating each indiviudal food item with an underscore. Don't add extra wording other than the answer:\n\n${capitalWords}` }
-                ],
-                max_tokens: 100,
+            const result = await fetch('/api/extract', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: capitalWords }),
             });
-            console.log(result);
-            const messageContent = result.choices[0]?.message?.content?.trim();
+
+            const data = await result.json();
+            const messageContent = data.message;
 
             if (messageContent) {
                 const foodItems = messageContent.split('_');
@@ -98,18 +90,22 @@ const DropzonePage: React.FC = () => {
         const newMessages = [...messages, { role: 'user', content: userInput }];
         setMessages(newMessages);
         setUserInput('');
-        console.log(messages.map(msg => msg.content).join('\n'));
+
         try {
-            const result = await openai.chat.completions.create({
-                model: "gpt-4o",
-                messages: [
-                    { role: "user" as const, content: messages.map(msg => msg.content).join('\n') },
-                    { role: "system" as const, content: `You are a helpful bot, helping with information about this food items on the menu: ${menuText.join(', ')}` }
-                ],
-                max_tokens: 150,
+            const result = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    messages: newMessages,
+                    menuText
+                }),
             });
 
-            const messageContent = result.choices[0]?.message?.content?.trim();
+            const data = await result.json();
+            const messageContent = data.message;
+
             if (messageContent) {
                 setMessages([...newMessages, { role: 'assistant', content: messageContent }]);
             }
