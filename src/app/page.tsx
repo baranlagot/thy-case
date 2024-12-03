@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Tesseract from 'tesseract.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
 const DropzonePage: React.FC = () => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -164,13 +166,18 @@ const DropzonePage: React.FC = () => {
                                 </div>
                             ))}
                         </div>
-                        <input
-                            type="text"
-                            value={userInput}
-                            onChange={(e) => setUserInput(e.target.value)}
-                            className="w-full p-2 mt-2 rounded-lg border border-gray-300"
-                        />
-                        <button onClick={handleSendMessage} className="w-full p-2 mt-2 bg-blue-500 text-white rounded-lg">Send</button>
+                        <div className="flex mt-2">
+                            <input
+                                type="text"
+                                value={userInput}
+                                onChange={(e) => setUserInput(e.target.value)}
+                                className="flex-grow p-2 rounded-lg border border-gray-300"
+                                placeholder="Type a message"
+                            />
+                            <button onClick={handleSendMessage} className="ml-2 p-2 bg-blue-500 text-white rounded-lg">
+                                <FontAwesomeIcon icon={faPaperPlane} />
+                            </button>
+                        </div>
                     </div>
                 </>
             )}
