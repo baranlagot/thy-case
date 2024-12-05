@@ -7,6 +7,8 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react"; // Add this import at the top
+import { Button } from "./ui/button";
+import { BiRefresh } from "react-icons/bi"; // Import the refresh icon
 
 interface FoodDetails {
   name: string;
@@ -28,6 +30,7 @@ interface FoodModalProps {
 export function FoodModal({ foodName, isOpen, onClose }: FoodModalProps) {
   const [loading, setLoading] = useState(false);
   const [foodDetails, setFoodDetails] = useState<FoodDetails | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function fetchFoodDetails() {
     if (!isOpen || !foodName) return;
@@ -41,7 +44,9 @@ export function FoodModal({ foodName, isOpen, onClose }: FoodModalProps) {
       });
       const data = await response.json();
       setFoodDetails(data);
+      setError(null);
     } catch (error) {
+      setError("Failed to fetch food details");
       console.error("Failed to fetch food details:", error);
     } finally {
       setLoading(false);
@@ -56,19 +61,20 @@ export function FoodModal({ foodName, isOpen, onClose }: FoodModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Loading...</span>
-              </div>
-            ) : (
-              foodDetails?.name
-            )}
-          </DialogTitle>
+          <DialogTitle>{loading ? "" : foodDetails?.name}</DialogTitle>
         </DialogHeader>
         <ScrollArea className="max-h-[80vh] p-4">
-          {loading ? (
+          {error ? (
+            <div className="flex flex-col items-center p-4">
+              <p className="mb-4 text-red-500">{error}</p>
+              <Button
+                onClick={fetchFoodDetails}
+                className="flex items-center justify-center"
+              >
+                <BiRefresh className="h-5 w-5" />
+              </Button>
+            </div>
+          ) : loading ? (
             <div className="flex justify-center items-center p-4">
               <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
             </div>
