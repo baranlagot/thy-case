@@ -103,7 +103,7 @@ export default function ChatBox({ menuItems }: ChatBoxProps) {
               inline-block p-3 rounded-2xl max-w-[80%] relative
               ${
                 m.role === "user"
-                  ? "bg-blue-500 text-white rounded-br-none"
+                  ? "bg-green-500 text-white rounded-br-none"
                   : "bg-white text-gray-800 rounded-bl-none"
               }
             `}
@@ -114,7 +114,7 @@ export default function ChatBox({ menuItems }: ChatBoxProps) {
                 absolute bottom-0 w-4 h-4 
                 ${
                   m.role === "user"
-                    ? "-right-2 bg-blue-500"
+                    ? "-right-2 bg-green-500"
                     : "-left-2 bg-white"
                 }
               `}

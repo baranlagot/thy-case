@@ -14,73 +14,60 @@ export default function FoodList({ items }: FoodListProps) {
   const [gyroscopeSupported, setGyroscopeSupported] = useState(false);
   const rotateX = useMotionValue(0);
   const rotateY = useMotionValue(0);
-  // const [selectedFood, setSelectedFood] = useState<typeof mockFoodItems[0] | null>(null)
+  const [selectedFood, setSelectedFood] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "DeviceOrientationEvent" in window) {
       setGyroscopeSupported(true);
 
       const handleOrientation = (event: DeviceOrientationEvent) => {
-        const beta = event.beta; // X-axis rotation
-        const gamma = event.gamma; // Y-axis rotation
+        const beta = event.beta;
+        const gamma = event.gamma;
 
         if (beta !== null && gamma !== null) {
-          rotateX.set(beta / 60); // Divide by 60 to limit the rotation
-          rotateY.set(gamma / 60);
+          rotateX.set(beta / 10);
+          rotateY.set(gamma / 10);
         }
       };
 
       window.addEventListener("deviceorientation", handleOrientation);
-
-      return () => {
-        window.removeEventListener("deviceorientation", handleOrientation);
-      };
+      return () => window.removeEventListener("deviceorientation", handleOrientation);
     }
-  }, [rotateX, rotateY]);
+  }, []);
 
-  // const handleFoodClick = (food: typeof items[0]) => {
-  //     setSelectedFood(food)
-  // }
+  const handleFoodClick = (food: string) => {
+    setSelectedFood(food);
+    setIsModalOpen(true);
+  };
 
   return (
     <>
-      <motion.div
-        className="space-y-3"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="space-y-2">
         {items.map((item, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            style={gyroscopeSupported ? { rotateX, rotateY } : {}}
+            style={{
+              rotateX: gyroscopeSupported ? rotateX : 0,
+              rotateY: gyroscopeSupported ? rotateY : 0,
+            }}
+            onClick={() => handleFoodClick(item)}
           >
-            <Card
-              className="bg-white shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer"
-              // /*onClick={() => handleFoodClick(item)*/}
-            >
-              <CardContent className="p-4">
-                <motion.div
-                  className="flex items-center justify-between"
-                  whileHover={{ x: 5 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  <span className="text-gray-800 font-medium">{item}</span>
-                  <ChevronRight className="h-5 w-5 text-gray-400" />
-                </motion.div>
+            <Card className="cursor-pointer hover:bg-gray-50">
+              <CardContent className="p-4 flex items-center justify-between">
+                <span>{item}</span>
+                <ChevronRight className="h-4 w-4" />
               </CardContent>
             </Card>
           </motion.div>
         ))}
-      </motion.div>
-      {/* <FoodModal
-                food={selectedFood}
-                isOpen={!!selectedFood}
-                onClose={() => setSelectedFood(null)}
-            /> */}
+      </div>
+
+      <FoodModal
+        foodName={selectedFood}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }
