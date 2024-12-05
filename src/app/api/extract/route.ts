@@ -16,7 +16,9 @@ export async function POST(req: Request) {
         { role: "system", content: "You are a helpful assistant." },
         {
           role: "user",
-          content: `Extract the list of menu items in english from the following text, take the context of the whole text first, don't try to take individual words only. then write these down, translating them to ${language} separating each individual food item with an underscore. Don't add extra wording other than the answer:\n\n${text}`,
+          content: `Extract the list of menu items in english from the following text, take the context of the whole text first, don't try to take individual words only. then write these down, translating them to ${language} separating each individual food item with an underscore.
+          If you can't extract the list of menu items, write '!'.
+        Don't add extra wording other than the answer:\n\n${text}`,
         },
       ],
       max_tokens: 300,

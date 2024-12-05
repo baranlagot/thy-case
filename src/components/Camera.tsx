@@ -4,16 +4,19 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import Tesseract from "tesseract.js";
 import { FaCamera } from "react-icons/fa";
-import { BiLoader } from "react-icons/bi"; // Add this import
+import { BiLoader } from "react-icons/bi";
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 interface CameraProps {
   onExtractComplete: (items: string[]) => void;
 }
 
 export default function Camera({ onExtractComplete }: CameraProps) {
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoTaken, setPhotoTaken] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleTakePhoto = () => {
@@ -39,34 +42,43 @@ export default function Camera({ onExtractComplete }: CameraProps) {
           .filter((word) => word === word.toUpperCase())
           .join(" ");
 
-        const deviceLanguage = navigator.language || "en";
-
-        // Use OpenAI to process the extracted text
         const result = await fetch("/api/extract", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            text: capitalWords,
-            language: deviceLanguage,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: capitalWords }),
         });
 
         const data = await result.json();
         const messageContent = data.message;
 
-        if (messageContent) {
+        if (messageContent === "!") {
+          toast({
+            variant: "destructive",
+            title: "Extraction Failed",
+            description: "Could not identify any food items in the image",
+            duration: 3000,
+          });
+          setError("Failed to extract food items from the image");
+          setProcessing(false);
+          setPhotoTaken(false);
+          onExtractComplete([]);
+        } else if (messageContent) {
           const foodItems = messageContent.split("_");
           onExtractComplete(foodItems); // Pass data to parent
           setProcessing(false);
+          setPhotoTaken(false);
         } else {
           onExtractComplete([]);
         }
       } catch (err) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occurred while processing the image",
+          duration: 3000,
+        });
         setPhotoTaken(false);
         setProcessing(false);
-        console.error("OCR Error:", err);
         onExtractComplete([]);
       }
     }
@@ -104,6 +116,7 @@ export default function Camera({ onExtractComplete }: CameraProps) {
           <FaCamera className="text-xl" />
         )}
       </Button>
+      <Toaster />
     </div>
   );
 }
