@@ -6,9 +6,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react"; // Add this import at the top
-import { Button } from "./ui/button";
-import { BiRefresh } from "react-icons/bi"; // Import the refresh icon
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BiRefresh } from "react-icons/bi";
 
 interface FoodDetails {
   name: string;
@@ -30,12 +30,19 @@ interface FoodModalProps {
 export function FoodModal({ foodName, isOpen, onClose }: FoodModalProps) {
   const [loading, setLoading] = useState(false);
   const [foodDetails, setFoodDetails] = useState<FoodDetails | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState(false);
+  const [cachedData, setCachedData] = useState<{ [key: string]: FoodDetails }>(
+    {}
+  );
 
-  async function fetchFoodDetails() {
-    if (!isOpen || !foodName) return;
+  const fetchFoodDetails = async () => {
+    if (cachedData[foodName]) {
+      setFoodDetails(cachedData[foodName]);
+      return;
+    }
 
     setLoading(true);
+    setFetchError(false);
     try {
       const response = await fetch("/api/info", {
         method: "POST",
@@ -44,17 +51,19 @@ export function FoodModal({ foodName, isOpen, onClose }: FoodModalProps) {
       });
       const data = await response.json();
       setFoodDetails(data);
-      setError(null);
+      setCachedData((prev) => ({ ...prev, [foodName]: data }));
     } catch (error) {
-      setError("Failed to fetch food details");
+      setFetchError(true);
       console.error("Failed to fetch food details:", error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchFoodDetails();
+    if (isOpen) {
+      fetchFoodDetails();
+    }
   }, [isOpen, foodName]);
 
   return (
@@ -64,9 +73,9 @@ export function FoodModal({ foodName, isOpen, onClose }: FoodModalProps) {
           <DialogTitle>{loading ? "" : foodDetails?.name}</DialogTitle>
         </DialogHeader>
         <ScrollArea className="max-h-[80vh] p-4">
-          {error ? (
+          {fetchError ? (
             <div className="flex flex-col items-center p-4">
-              <p className="mb-4 text-red-500">{error}</p>
+              <p className="mb-4 text-red-500">Failed to fetch food details.</p>
               <Button
                 onClick={fetchFoodDetails}
                 className="flex items-center justify-center"
