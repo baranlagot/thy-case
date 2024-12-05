@@ -3,6 +3,8 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import Tesseract from "tesseract.js";
+import { FaCamera } from 'react-icons/fa';
+import { BiLoader } from 'react-icons/bi'; // Add this import
 
 interface CameraProps {
   onExtractComplete: (items: string[]) => void;
@@ -127,9 +129,24 @@ export default function Camera({ onExtractComplete }: CameraProps) {
       <Button
         onClick={handleTakePhoto}
         disabled={photoTaken}
+        aria-label="Take Photo"
         className="shadow-md transition duration-300 ease-in-out transform hover:scale-105 active:scale-95"
       >
-        {processing ? "Processing..." : "Take Photo"}
+        <style>{`
+          @keyframes spin {
+            from {
+              transform: rotate(0deg);
+            }
+            to {
+              transform: rotate(360deg);
+            }
+          }
+        `}</style>
+        {processing ? (
+          <BiLoader className="text-xl animate-spin" />
+        ) : (
+          <FaCamera className="text-xl" />
+        )}
       </Button>
     </div>
   );

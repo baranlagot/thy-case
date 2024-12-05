@@ -22,16 +22,9 @@ export default function Home() {
         <div className="p-4 space-y-6">
           <Camera onExtractComplete={handleExtractComplete} />
           <div>
-            <h2 className="text-lg font-semibold mb-3 text-gray-700">
-              Identified Food Items
-            </h2>
-            <p className="text-sm text-gray-500 mb-3">
-              Tilt your device to see the cards move! Tap a food item for more
-              info.
-            </p>
             <FoodList items={menuItems} />
           </div>
-          <ChatBox menuItems={menuItems} />
+          {menuItems.length > 0 && <ChatBox menuItems={menuItems} />}
         </div>
       </div>
     </main>
