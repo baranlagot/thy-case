@@ -5,6 +5,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { TypingIndicator } from "./TypingIndicator";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { ChatBubble } from "./ChatBubble";
 
 interface ChatBoxProps {
   menuItems: string[];
@@ -94,45 +95,9 @@ export default function ChatBox({ menuItems }: ChatBoxProps) {
     <div className="bg-gray-100 rounded-2xl p-4 space-y-4">
       <ScrollArea className="h-[300px] pr-4" viewportRef={handleViewportRef}>
         {messages.map((m) => (
-          <div
-            key={m.key}
-            className={`mb-4 ${m.role === "user" ? "text-right" : "text-left"}`}
-          >
-            <div
-              className={`
-              inline-block p-3 rounded-2xl max-w-[80%] relative
-              ${
-                m.role === "user"
-                  ? "bg-green-500 text-white rounded-br-none"
-                  : "bg-white text-gray-800 rounded-bl-none"
-              }
-            `}
-            >
-              {m.content}
-              <div
-                className={`
-                absolute bottom-0 w-4 h-4 
-                ${
-                  m.role === "user"
-                    ? "-right-2 bg-green-500"
-                    : "-left-2 bg-white"
-                }
-              `}
-                style={{
-                  clipPath:
-                    m.role === "user"
-                      ? "polygon(0 0, 0% 100%, 100% 100%)"
-                      : "polygon(0 100%, 100% 0, 100% 100%)",
-                }}
-              ></div>
-            </div>
-          </div>
+          <ChatBubble key={m.key} role={m.role} content={m.content} />
         ))}
-        {isTyping && (
-          <div className="text-left mb-4 max-w-[60%]">
-            <TypingIndicator />
-          </div>
-        )}
+        {isTyping && <ChatBubble role="assistant" isTyping={true} />}
       </ScrollArea>
       <form onSubmit={handleSendMessage} className="flex gap-2">
         <Input

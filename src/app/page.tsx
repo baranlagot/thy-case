@@ -4,7 +4,7 @@ import Camera from "@/components/Camera";
 import ChatBox from "@/components/ChatBox";
 import FoodList from "@/components/FoodList";
 import { useState } from "react";
-import Image from 'next/image';
+import Image from "next/image";
 
 // page.tsx
 export default function Home() {
@@ -19,13 +19,10 @@ export default function Home() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="bg-red-600 p-4 text-white">
           <div className="flex items-center w-full">
-            <Image 
-              src="/thy.png" 
-              alt="Logo" 
-              width={64} 
-              height={64}
-            />
-            <h1 className="text-2xl font-semibold flex-1 text-center">Upload Menu</h1>
+            <Image src="/thy.png" alt="Logo" width={64} height={64} />
+            <h1 className="text-2xl font-semibold flex-1 text-center">
+              Upload Menu
+            </h1>
             <div className="w-[64px]"></div> {/* Spacer to balance the logo */}
           </div>
         </div>

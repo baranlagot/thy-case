@@ -3,8 +3,8 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import Tesseract from "tesseract.js";
-import { FaCamera } from 'react-icons/fa';
-import { BiLoader } from 'react-icons/bi'; // Add this import
+import { FaCamera } from "react-icons/fa";
+import { BiLoader } from "react-icons/bi"; // Add this import
 
 interface CameraProps {
   onExtractComplete: (items: string[]) => void;
@@ -47,7 +47,10 @@ export default function Camera({ onExtractComplete }: CameraProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: capitalWords, language: deviceLanguage }),
+          body: JSON.stringify({
+            text: capitalWords,
+            language: deviceLanguage,
+          }),
         });
 
         const data = await result.json();
@@ -66,53 +69,6 @@ export default function Camera({ onExtractComplete }: CameraProps) {
         console.error("OCR Error:", err);
         onExtractComplete([]);
       }
-    }
-  };
-
-  const handleExtractText = async (image: string) => {
-    if (!image) {
-      setError("No image selected for text extraction.");
-      return;
-    }
-
-    try {
-      // Use Tesseract.js to extract text from the image
-      const {
-        data: { text },
-      } = await Tesseract.recognize(image, "eng");
-      const capitalWords = text
-        .split(/\s+/)
-        .filter((word) => word === word.toUpperCase())
-        .join(" ");
-
-      // Use OpenAI to process the extracted text
-      const response = await fetch("/api/extract", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: capitalWords }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const messageContent = data.message;
-
-      if (messageContent) {
-        const foodItems = messageContent.split("_");
-        onExtractComplete(foodItems); // Pass data to parent
-        setError(null); // Clear any errors
-      } else {
-        setError("Failed to extract text from the image.");
-        onExtractComplete([]);
-      }
-    } catch (err) {
-      console.error("OCR Error:", err);
-      setError("Failed to extract text from the image.");
-      onExtractComplete([]);
     }
   };
 

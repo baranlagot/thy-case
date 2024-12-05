@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion, useMotionValue } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
 import { FoodModal } from "./FoodModal";
@@ -32,7 +32,8 @@ export default function FoodList({ items }: FoodListProps) {
       };
 
       window.addEventListener("deviceorientation", handleOrientation);
-      return () => window.removeEventListener("deviceorientation", handleOrientation);
+      return () =>
+        window.removeEventListener("deviceorientation", handleOrientation);
     }
   }, []);
 
