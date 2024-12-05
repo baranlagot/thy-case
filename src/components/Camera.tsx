@@ -17,7 +17,6 @@ export default function Camera({ onExtractComplete }: CameraProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoTaken, setPhotoTaken] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleTakePhoto = () => {
     if (fileInputRef.current) {
@@ -58,7 +57,6 @@ export default function Camera({ onExtractComplete }: CameraProps) {
             description: "Could not identify any food items in the image",
             duration: 3000,
           });
-          setError("Failed to extract food items from the image");
           setProcessing(false);
           setPhotoTaken(false);
           onExtractComplete([]);

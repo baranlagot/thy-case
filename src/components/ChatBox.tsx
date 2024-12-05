@@ -12,14 +12,12 @@ interface ChatBoxProps {
 }
 
 export default function ChatBox({ menuItems }: ChatBoxProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<
     { role: string; content: string; key: number }[]
   >([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const [viewportNode, setViewportNode] = useState<HTMLDivElement | null>(null);
 
