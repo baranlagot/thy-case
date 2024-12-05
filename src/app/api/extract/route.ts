@@ -8,13 +8,13 @@ const openai = new OpenAI({
 });
 
 export async function POST(req: Request) {
-    const { text } = await req.json();
+    const { text, language } = await req.json();
     try {
         const result = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
                 { role: "system", content: "You are a helpful assistant." },
-                { role: "user", content: `Extract the list of food items in english from the following text, then write these down separating each individual food item with an underscore. Don't add extra wording other than the answer:\n\n${text}` }
+                { role: "user", content: `Extract the list of menu items in english from the following text, take the context of the whole text first, don't try to take individual words only. then write these down, translating them to ${language} separating each individual food item with an underscore. Don't add extra wording other than the answer:\n\n${text}` }
             ],
             max_tokens: 300,
         });

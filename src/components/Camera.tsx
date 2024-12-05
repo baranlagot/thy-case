@@ -37,13 +37,15 @@ export default function Camera({ onExtractComplete }: CameraProps) {
           .filter((word) => word === word.toUpperCase())
           .join(" ");
 
+        const deviceLanguage = navigator.language || "en";
+
         // Use OpenAI to process the extracted text
         const result = await fetch("/api/extract", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: capitalWords }),
+          body: JSON.stringify({ text: capitalWords, language: deviceLanguage }),
         });
 
         const data = await result.json();
