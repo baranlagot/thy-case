@@ -20,15 +20,18 @@ An AI-powered menu scanner and chat application that helps users understand and 
 
 - [Setup Instructions](#setup-instructions)
 
-- [Usage Guide](#usage-guide)
+- [Installation](#installation)
+
+- [Environment](#environment-variables)
+
+- [Run Development Server](#run-development-server)
 
 - [Component Documentation](#component-documentation)
 
-- [Development Guidelines](#development-guidelines)
+- [API Routes](#api-routes)
 
-- [Testing](#testing)
+- [Usage Guide](#usage-guide)
 
-- [Production Deployment](#production-deployment)
 
   
 
@@ -108,7 +111,7 @@ npm install
 cp .env.example .env.local
 ```
 
-### Envrionment Variables
+### Environment Variables
 OPENAI_API_KEY=your_api_key_here
 
 ### Run Development Server
