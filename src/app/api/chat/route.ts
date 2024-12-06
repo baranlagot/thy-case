@@ -12,7 +12,7 @@ export async function POST(req: Request) {
             model: "gpt-4o",
             messages: [
                 ...messages,
-                { role: "system", content: `You are a helpful bot, helping with information about these food items on the menu: ${menuItems.join(', ')}. Keep the answer as short and minimal as possible` }
+                { role: "system", content: `You are a helpful bot, helping with information about these food items on the menu: ${menuItems.join(', ')}. Keep the answer as short and minimal as possible and use the messaged language in your answer` }
             ],
             max_tokens: 300,
         });
